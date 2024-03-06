@@ -124,7 +124,7 @@ pub fn main() !void {
     var buf_reader = std.io.bufferedReader(file.reader());
     const in_stream = buf_reader.reader();
 
-    // calculate sum
+    // calculate answer
     var buf: [1024]u8 = undefined;
     var answer: u32 = 0;
     while (try in_stream.readUntilDelimiterOrEof(&buf, '\n')) |line| {
