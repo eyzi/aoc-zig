@@ -126,10 +126,10 @@ pub fn main() !void {
 
     // calculate sum
     var buf: [1024]u8 = undefined;
-    var sum: u32 = 0;
+    var answer: u32 = 0;
     while (try in_stream.readUntilDelimiterOrEof(&buf, '\n')) |line| {
-        sum += @as(u32, @intCast(line_integer(line)));
+        answer += @as(u32, @intCast(line_integer(line)));
     }
 
-    std.debug.print("Answer: {d}", .{sum});
+    std.debug.print("Answer: {any}", .{answer});
 }
