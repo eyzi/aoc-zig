@@ -1,10 +1,9 @@
 const std = @import("std");
 
 const INTEGER_STRING_DICTIONARY = [9][]const u8{ "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" };
-const INCLUDE_WORDS = true;
 
-fn is_integer_string_for(integer: usize, string: []const u8) bool {
-    if (!INCLUDE_WORDS) return false;
+fn is_integer_string_for(integer: usize, string: []const u8, include_words: bool) bool {
+    if (!include_words) return false;
 
     const integer_string_len = INTEGER_STRING_DICTIONARY[integer].len;
     if (string.len != integer_string_len) return false;
@@ -16,8 +15,8 @@ fn is_integer_string_for(integer: usize, string: []const u8) bool {
     } else true;
 }
 
-fn can_match_integer_string_for(integer: usize, string: []const u8) bool {
-    if (!INCLUDE_WORDS) return false;
+fn can_match_integer_string_for(integer: usize, string: []const u8, include_words: bool) bool {
+    if (!include_words) return false;
 
     return for (0..string.len) |index| {
         if (INTEGER_STRING_DICTIONARY[integer][index] != string[index]) {
@@ -26,34 +25,34 @@ fn can_match_integer_string_for(integer: usize, string: []const u8) bool {
     } else true;
 }
 
-fn can_match_integer_string(string: []const u8) bool {
-    if (!INCLUDE_WORDS) return false;
+fn can_match_integer_string(string: []const u8, include_words: bool) bool {
+    if (!include_words) return false;
 
     return for (0..9) |index| {
-        if (can_match_integer_string_for(index, string)) {
+        if (can_match_integer_string_for(index, string, include_words)) {
             break true;
         }
     } else false;
 }
 
-fn string_to_integer(string: []const u8) u8 {
+fn string_to_integer(string: []const u8, include_words: bool) u8 {
     if (string.len == 1 and string[0] >= 49 and string[0] <= 57) {
         return @as(u8, @intCast(string[0] - 48));
     }
 
-    if (!INCLUDE_WORDS) return 0;
+    if (!include_words) return 0;
 
     return for (1..10) |integer_index| {
-        if (is_integer_string_for(integer_index - 1, string)) {
+        if (is_integer_string_for(integer_index - 1, string, include_words)) {
             break @as(u8, @intCast(integer_index));
         }
     } else 0;
 }
 
-fn is_integer_string(string: []const u8) bool {
+fn is_integer_string(string: []const u8, include_words: bool) bool {
     if (string.len == 1 and string[0] >= 49 and string[0] <= 57) {
         return true;
-    } else if (INCLUDE_WORDS) {
+    } else if (include_words) {
         const integer_string_value = string_to_integer(string);
         return integer_string_value > 0;
     } else {
@@ -61,7 +60,7 @@ fn is_integer_string(string: []const u8) bool {
     }
 }
 
-fn line_integer(line: []const u8) u8 {
+fn line_integer(line: []const u8, include_words: bool) u8 {
     var first_integer: u8 = 0;
     var last_integer: u8 = 0;
     var search_start: usize = 0;
@@ -78,7 +77,7 @@ fn line_integer(line: []const u8) u8 {
         // std.debug.print("| {s}\n", .{string_value}); // uncomment for verbose search
 
         // if string_values is an int
-        const integer_value = @as(u8, @intCast(string_to_integer(string_value)));
+        const integer_value = @as(u8, @intCast(string_to_integer(string_value, include_words)));
         if (integer_value > 0) {
             if (first_integer == 0) {
                 first_integer = integer_value;
@@ -88,7 +87,7 @@ fn line_integer(line: []const u8) u8 {
             continue;
         }
 
-        if (can_match_integer_string(string_value)) { // if possible match, extend search
+        if (can_match_integer_string(string_value, include_words)) { // if possible match, extend search
             search_end += 1;
             continue;
         } else if (search_end - search_start > 1) { // if not possible match and search is big, pop first character from search
@@ -101,35 +100,45 @@ fn line_integer(line: []const u8) u8 {
     }
 
     const current_line_integer = (first_integer * 10) + last_integer;
-    // std.debug.print("{d} for {s}\n", .{ current_line_integer, line }); // uncomment for per line search
     return current_line_integer;
 }
 
-// run with `zig run .\src\001\main.zig -- src/001/input.txt`
-pub fn main() !void {
-    // get input file
-    const allocator = std.heap.page_allocator;
-    var args = try std.process.argsWithAllocator(allocator);
-    defer args.deinit();
-    _ = args.next(); // exe
-    const inputfile = args.next();
-    if (inputfile == null) {
-        std.debug.print("Input file required.", .{});
-        return;
-    }
-
-    // get file content
-    var file = try std.fs.cwd().openFile(inputfile.?, .{});
-    defer file.close();
-    var buf_reader = std.io.bufferedReader(file.reader());
-    const in_stream = buf_reader.reader();
-
-    // calculate answer
-    var buf: [1024]u8 = undefined;
+pub fn exclude_string_integers(input: []const u8) !u32 {
     var answer: u32 = 0;
-    while (try in_stream.readUntilDelimiterOrEof(&buf, '\n')) |line| {
-        answer += @as(u32, @intCast(line_integer(line)));
+
+    var line_buffer: [1024]u8 = std.mem.zeroes([1024]u8);
+    var line_char_counter: usize = 0;
+    for (input) |char| {
+        if (std.mem.eql(u8, &[1]u8{char}, "\n")) {
+            const line = line_buffer[0..line_char_counter];
+            answer += @as(u32, @intCast(line_integer(line, false)));
+            line_buffer = std.mem.zeroes([1024]u8);
+            line_char_counter = 0;
+        } else {
+            line_buffer[line_char_counter] = char;
+            line_char_counter += 1;
+        }
     }
 
-    std.debug.print("Answer: {any}", .{answer});
+    return answer;
+}
+
+pub fn include_string_integers(input: []const u8) !u32 {
+    var answer: u32 = 0;
+
+    var line_buffer: [1024]u8 = std.mem.zeroes([1024]u8);
+    var line_char_counter: usize = 0;
+    for (input) |char| {
+        if (std.mem.eql(u8, &[1]u8{char}, "\n")) {
+            const line = line_buffer[0..line_char_counter];
+            answer += @as(u32, @intCast(line_integer(line, true)));
+            line_buffer = std.mem.zeroes([1024]u8);
+            line_char_counter = 0;
+        } else {
+            line_buffer[line_char_counter] = char;
+            line_char_counter += 1;
+        }
+    }
+
+    return answer;
 }
