@@ -78,13 +78,13 @@ fn game_power(line: []const u8) !u32 {
     return max_blue * max_green * max_red;
 }
 
-pub fn sum_game_value(input: []const u8) !u32 {
+pub fn part1(input: []const u8) !u32 {
     var answer: u32 = 0;
 
     var line_buffer: [1024]u8 = std.mem.zeroes([1024]u8);
     var line_char_counter: usize = 0;
     for (input) |char| {
-        if (std.mem.eql(u8, &[1]u8{char}, "\n")) {
+        if (char == '\n') {
             const line = line_buffer[0..line_char_counter];
             answer += try game_value(line);
             line_buffer = std.mem.zeroes([1024]u8);
@@ -98,13 +98,13 @@ pub fn sum_game_value(input: []const u8) !u32 {
     return answer;
 }
 
-pub fn sum_game_power(input: []const u8) !u32 {
+pub fn part2(input: []const u8) !u32 {
     var answer: u32 = 0;
 
     var line_buffer: [1024]u8 = std.mem.zeroes([1024]u8);
     var line_char_counter: usize = 0;
     for (input) |char| {
-        if (std.mem.eql(u8, &[1]u8{char}, "\n")) {
+        if (char == '\n') {
             const line = line_buffer[0..line_char_counter];
             answer += try game_power(line);
             line_buffer = std.mem.zeroes([1024]u8);

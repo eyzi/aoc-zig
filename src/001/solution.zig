@@ -103,13 +103,13 @@ fn line_integer(line: []const u8, include_words: bool) u8 {
     return current_line_integer;
 }
 
-pub fn exclude_string_integers(input: []const u8) !u32 {
+pub fn part1(input: []const u8) !u32 {
     var answer: u32 = 0;
 
     var line_buffer: [1024]u8 = std.mem.zeroes([1024]u8);
     var line_char_counter: usize = 0;
     for (input) |char| {
-        if (std.mem.eql(u8, &[1]u8{char}, "\n")) {
+        if (char == '\n') {
             const line = line_buffer[0..line_char_counter];
             answer += @as(u32, @intCast(line_integer(line, false)));
             line_buffer = std.mem.zeroes([1024]u8);
@@ -123,13 +123,13 @@ pub fn exclude_string_integers(input: []const u8) !u32 {
     return answer;
 }
 
-pub fn include_string_integers(input: []const u8) !u32 {
+pub fn part2(input: []const u8) !u32 {
     var answer: u32 = 0;
 
     var line_buffer: [1024]u8 = std.mem.zeroes([1024]u8);
     var line_char_counter: usize = 0;
     for (input) |char| {
-        if (std.mem.eql(u8, &[1]u8{char}, "\n")) {
+        if (char == '\n') {
             const line = line_buffer[0..line_char_counter];
             answer += @as(u32, @intCast(line_integer(line, true)));
             line_buffer = std.mem.zeroes([1024]u8);

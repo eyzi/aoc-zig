@@ -9,5 +9,5 @@ pub fn main() !void {
     _ = args.next();
     const input = args.next() orelse unreachable;
 
-    std.debug.print("Answer: {!}", .{solution.sum_game_value(input)});
+    std.debug.print("Answer: {!}", .{solution.part1(input)});
 }

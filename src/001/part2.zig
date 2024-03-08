@@ -9,5 +9,5 @@ pub fn main() !void {
     _ = args.next();
     const input = args.next() orelse unreachable;
 
-    std.debug.print("Answer: {!}", .{solution.include_string_integers(input)});
+    std.debug.print("Answer: {!}", .{solution.part2(input)});
 }
